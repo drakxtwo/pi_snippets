@@ -1,0 +1,270 @@
+#+TITLE: Useful snippets for working with the Raspberry Pi
+#+AUTHOR: drakxtwo
+#+EMAIL: lhalls72@gmail.com
+#+DESCRIPTION: General information and snippets of code for working in python or bash with the RaspberryPi
+#+KEYWORDS:  python raspberrypi snippet
+#+AUTHOR: Lee Halls
+#+MAILTO: lhalls72@gmail.com
+#+KEYWORDS: raspberrypi notes snippets code bash python 
+#+LANGUAGE:  en
+
+* File
+** read csv and create an array variable
+#+BEGIN_SRC python
+# read in stored values & initialise preset values
+import csv
+try:
+    with open('/tmp/tmpvalues.csv', 'r') as csvfile:
+        fileRead = csv.reader(csvfile, delimiter=',')
+        for row in fileRead:
+            SensorValues = [float(x) for x in row if x != '']
+except:
+    SensorValues = (
+        66.00,
+        66.00,
+        66.00,
+        66.00,
+        66.00,
+        66.00,
+        66.00,
+        66.00,
+        66.00,
+        66.00)
+#+END_SRC
+
+** credential file
+create a file called credentials.py eg
+
+#+BEGIN_SRC python
+# email login details
+em_login = {
+    'smtpdata': 'smtp.server.address',
+    'login': 'login.address',
+    'password': 'login.password',
+    'toemail': 'send.to.email.address'
+}
+# initial state details
+in_login = {
+    'login': 'login.address',
+    'password': 'login.password',
+    'accesskey': 'access.key',
+    'bucketname': 'monitorhome',
+    'bucketkey': 'bucket.key'
+}
+#+END_SRC
+
+now call this file as a module in the main code and assign to your chosen variable
+
+#+BEGIN_SRC python
+import credentials
+
+empassword = leecredentials.em_login['password']
+inpassword = leecredentials.in_login['password']
+
+print("email password:", empassword)
+print("initial password:", inpassword)
+
+#+END_SRC
+
+** access a network drive
+Edit your /etc/fstab file and add the following line (changing the ip address and location of the credentials file to suit your setup);
+
+#+BEGIN_SRC bash
+//192.168.1.1/T_Drive /media/nas_documents cifs credentials=/home/drakx/.nas_credentials,sec=ntlmv2,uid=1000,gid=1000,iocharset=utf8 0 0
+#+END_SRC
+
+Now create a file called .nas_credentials in your home directory
+
+#+BEgIN_SRC
+username=YOUR_ROUTER_LOGIN
+password=YOUR_ROUTER_LOGIN_PASSWORD
+#+END_SRC
+
+and finally a directory;
+
+/media/nas_documents
+
+Reboot and you should be good to go however if you still have problems (my pi would not wait for the wireless network so the drive failed to mount) perhaps consider adding the mount -a command to your crontab
+
+** convert windows CR (carriage returns) to linux
+sed -i 's/\r//' filename
+
+Use with care it could destroy your file, it might be better to the dos2unix utility but the sed command worked for me
+
+* Display
+** rotate official display
+Useful if the display case you've bought is fixed orientation;
+
+edit your /boot/config.txt file, and add the following line:
+
+lcd_rotate=2
+
+** get backlight status
+Weirdly it's 0 for on and 1 for off and script must be run as root
+
+#!/usr/bin/env python3
+# gets backlight state
+
+import time
+
+file=open('/sys/devices/platform/rpi_backlight/backlight/rpi_backlight/bl_power','r+')
+current_status=int(file.read(1))
+
+print(current_status)
+
+** kiosk mode
+modify the /etc/xdg/lxsession/LXDE/autostart file or if using the NOOBS installation /etc/xdg/lxsession/LXDE-pi/autostart 
+@lxpanel --profile LXDE-pi
+@pcmanfm --desktop --profile LXDE-pi
+@xscreensaver -no-splash
+@point-rpi
+
+@xset s noblank
+@xset s off
+@xset -dpms
+
+@chromium --noerrdialogs --kiosk http://127.0.0.1
+
+If the following file exists then it overrides any other files so the @chromium commnd must go in here
+nano .config/lxsession/LXDE-pi/autostart
+
+@chromium-browser --noerrdialogs --kiosk http://127.0.0.1:5000 --incognito --disable-translate
+
+* audio
+** Enabling Audio Output
+By default, the RPi audio output is set to automatically select the digital HDMI interface if its being used, otherwise the analog audio output. You can force it to use a specific interface via the sound mixer controls.  amixer allows command-line control of the mixer for the ALSA driver.
+
+You can force the RPi to use a specific interface using the command amixer cset numid=3 N where the N parameter means the following: 0=auto, 1=analog, 2=hdmi.  Therefore, to force the Raspberry Pi to use the analog output:
+
+amixer cset numid=3 1
+** How to play Internet radio on your Raspberry PI?
+
+first make sure your audio is working, using the ALSA package
+Raspberry PI - getting audio working
+install the mpd and mpc packages:
+sudo apt-get install mpd mpc
+change the permissions of mpd (just to make sure):
+sudo service mpd stop
+sudo chmod -R g+w /var/lib/mpd
+sudo chmod -R g+w /var/run/mpd
+make a change to the mpd config file /etc/mpd.conf
+sudo nano /etc/mpd.conf
+Comment OUT the line:
+bind_to_address "localhost"
+So, change it to:
+# bind_to_address "localhost"
+reboot your Raspberry PI:
+sudo shutdown now -r
+after it's up and running again add an Internet radio URL, for instance:
+mpc add http://icecast.omroep.nl/3fm-bb-mp3
+to start playing the stream type:
+mpc play
+
+* github
+no data - waiting update
+
+* bash
+** alias a file
+for example if you get tired of typing emacs -nw to start emacs without a gui window then add
+
+#+BEGIN_SRC bash
+alias enw='emacs -nw'
+#+END_SRC
+
+to the end of your .profile or .bashrc file located at /home or /home/usr
+* mpd & mpc
+
+argh what a fucking nightmare that turned out to be, countless configs and websites reviewd on how "easy" it was to get the ###*### working. Ha! Eventually i found the following https://wiki.archlinux.org/index.php/Music_Player_Daemon/Troubleshooting perhaps it took me longer than it should because i was researching specific errors however eventually the following worked for me;
+
+comment out the the line in your [/etc/mpd.conf] which shows;
+
+bind_to_address "localhost"
+
+and add (or change it to read) 
+
+bind_to_address "127.0.0.1"
+port "6600"
+
+now at *last* i can play with ncmpc the music bring on '18 & Life.mp3' or 'The Vengeful One' which i was rapidly approaching....
+
+AND in order to play the online radio stream i needed not thier m3u playlist but to examine this file and extract the following
+
+http://stream4.nadaje.com:11986/prs
+
+then save that into MY OWN m3u playlist for for the MPD daemon. Methinks i'm a little to old for this shit. Yippee kay ay mother fuckers.
+
+** TODO wait for wifi
+damn thing doesnt wait for wifi so consider looking at;
+
+http://raspberrypi.stackexchange.com/questions/13558/how-to-get-wi-fi-to-connect-on-boot
+
+* crontab
+
+The & at the end of the line makes the script run in the background whilst the pi carries on booting
+@reboot sudo python /home/pi/homeApp/ourhome.py &
+
+By default, the logging for the cron daemon is not enabled in Debian (I assume it is the system you are using). To enable it, please open the file /etc/rsyslog.conf via
+
+sudo nano /etc/rsyslog.conf
+
+and uncomment the line
+
+# cron.*                          /var/log/cron.log
+
+to run a command on boot i use the following in the crontab file
+
+@reboot run_command
+
+** cron sleep
+Starting a command on reboot after x seconds 
+
+For some reason my pi would not wait for the wifi network to come online (wait for network on boot is enabled) so my NAS wont connect, to be honest i had other things to do than fault find so as i added an @reboot mount command with a sleep period to ensure the drive was accessible;
+
+#+BEGIN_SRC
+@reboot sleep 10;sudo mount -a
+#+END_SRC
+
+** specifying the crontab editor
+export VISUAL=nano; crontab -e
+
+* wifi
+
+add to /etc/network/interfaces the following
+
+auto lo
+iface lo inet loopback
+
+auto eth0
+allow-hotplug eth0
+iface eth0 inet manual
+
+auto wlan0
+allow-hotplug wlan0
+iface wlan0 inet manual
+    wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+
+allow-hotplug wlan1
+iface wlan1 inet manual
+    wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+
+* mail
+
+In my case, the message was hinting at a permissions problem with the bash script, but I couldn't see it until I installed an MTA.
+
+As suggested I ran:
+
+sudo aptitude install postfix
+I chose "Local" during setup and after running the cron job again:
+
+sudo tail -f /var/mail/<user>
+In my case I replaced
+
+<user>
+with "root".
+
+I was then able to see the error output related to permissions.
+* emacs
+Most of my pi's run headless and when editing i like to emacs so i need to type emacs -nw filename all the time. Creating an alias eases the typing
+#+BEGIN_SRC bash
+alias emacs="emacs -nw"
+#+END_SRC
