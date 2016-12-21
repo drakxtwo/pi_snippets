@@ -249,20 +249,15 @@ iface wlan1 inet manual
 
 * mail
 
-In my case, the message was hinting at a permissions problem with the bash script, but I couldn't see it until I installed an MTA.
+Had problems with a cron job and no idea why, wihtout an MTA or mail transport assistant i could not see what errors were being given, after reading up i installed postfix
 
-As suggested I ran:
+sudo apt install postfix
 
-sudo aptitude install postfix
-I chose "Local" during setup and after running the cron job again:
-
+Choosing "LOCAL" during setup, then after a reboot i could use the following to find out what went wrong:
+#+BEGIN_SRC
 sudo tail -f /var/mail/<user>
-In my case I replaced
+#+END_SRC
 
-<user>
-with "root".
-
-I was then able to see the error output related to permissions.
 * emacs
 Most of my pi's run headless and when editing i like to emacs so i need to type emacs -nw filename all the time. Creating an alias eases the typing
 #+BEGIN_SRC bash
