@@ -130,7 +130,7 @@ nano .config/lxsession/LXDE-pi/autostart
 
 @chromium-browser --noerrdialogs --kiosk http://127.0.0.1:5000 --incognito --disable-translate
 
-* audio
+* Audio
 ** Enabling Audio Output
 By default, the RPi audio output is set to automatically select the digital HDMI interface if its being used, otherwise the analog audio output. You can force it to use a specific interface via the sound mixer controls.  amixer allows command-line control of the mixer for the ALSA driver.
 
@@ -160,19 +160,7 @@ mpc add http://icecast.omroep.nl/3fm-bb-mp3
 to start playing the stream type:
 mpc play
 
-* github
-no data - waiting update
-
-* bash
-** alias a file
-for example if you get tired of typing emacs -nw to start emacs without a gui window then add
-
-#+BEGIN_SRC bash
-alias enw='emacs -nw'
-#+END_SRC
-
-to the end of your .profile or .bashrc file located at /home or /home/usr
-* mpd & mpc
+** mpd and mpc
 
 argh what a nightmare that turned out to be, countless configs and websites reviewd on how "easy" it was to get the ###*### working. Ha! Eventually i found the following https://wiki.archlinux.org/index.php/Music_Player_Daemon/Troubleshooting perhaps it took me longer than it should because i was researching specific errors however eventually the following worked for me;
 
@@ -196,6 +184,19 @@ AND in order to play the online radio stream i needed not thier m3u playlist but
     http://stream4.nadaje.com:11986/prs
 
 then save that into MY OWN m3u playlist for for the MPD daemon. 
+
+* github
+no data - waiting update
+
+* bash
+** alias a file
+for example if you get tired of typing emacs -nw to start emacs without a gui window then add
+
+#+BEGIN_SRC bash
+alias enw='emacs -nw'
+#+END_SRC
+
+to the end of your .profile or .bashrc file located at /home or /home/usr
 
 ** TODO wait for wifi
 damn thing doesnt wait for wifi so consider looking at;
