@@ -174,24 +174,28 @@ alias enw='emacs -nw'
 to the end of your .profile or .bashrc file located at /home or /home/usr
 * mpd & mpc
 
-argh what a fucking nightmare that turned out to be, countless configs and websites reviewd on how "easy" it was to get the ###*### working. Ha! Eventually i found the following https://wiki.archlinux.org/index.php/Music_Player_Daemon/Troubleshooting perhaps it took me longer than it should because i was researching specific errors however eventually the following worked for me;
+argh what a nightmare that turned out to be, countless configs and websites reviewd on how "easy" it was to get the ###*### working. Ha! Eventually i found the following https://wiki.archlinux.org/index.php/Music_Player_Daemon/Troubleshooting perhaps it took me longer than it should because i was researching specific errors however eventually the following worked for me;
 
 comment out the the line in your [/etc/mpd.conf] which shows;
 
+#+BEGIN_SRC bash
 bind_to_address "localhost"
+#+END_SRC
 
 and add (or change it to read) 
 
+#+BEGIN_SRC
 bind_to_address "127.0.0.1"
 port "6600"
+#+END_SRC
 
 now at *last* i can play with ncmpc the music bring on '18 & Life.mp3' or 'The Vengeful One' which i was rapidly approaching....
 
 AND in order to play the online radio stream i needed not thier m3u playlist but to examine this file and extract the following
 
-http://stream4.nadaje.com:11986/prs
+    http://stream4.nadaje.com:11986/prs
 
-then save that into MY OWN m3u playlist for for the MPD daemon. Methinks i'm a little to old for this shit. Yippee kay ay mother fuckers.
+then save that into MY OWN m3u playlist for for the MPD daemon. 
 
 ** TODO wait for wifi
 damn thing doesnt wait for wifi so consider looking at;
