@@ -9,6 +9,7 @@
 #+LANGUAGE:  en
 
 * File
+Various pieces of info for python and pi setup
 ** read csv and create an array variable
 #+BEGIN_SRC python
 # read in stored values & initialise preset values
@@ -66,25 +67,12 @@ print("initial password:", inpassword)
 
 #+END_SRC
 
-** access a network drive
-Edit your /etc/fstab file and add the following line (changing the ip address and location of the credentials file to suit your setup);
-
-#+BEGIN_SRC bash
-//192.168.1.1/T_Drive /media/nas_documents cifs credentials=/home/drakx/.nas_credentials,sec=ntlmv2,uid=1000,gid=1000,iocharset=utf8 0 0
-#+END_SRC
-
-Now create a file called .nas_credentials in your home directory
-
-#+BEgIN_SRC
-username=YOUR_ROUTER_LOGIN
-password=YOUR_ROUTER_LOGIN_PASSWORD
-#+END_SRC
 
 and finally a directory;
 
 /media/nas_documents
 
-Reboot and you should be good to go however if you still have problems (my pi would not wait for the wireless network so the drive failed to mount) perhaps consider adding the mount -a command to your crontab
+Reboot and you should be good to go however if you still have problems (my pi would not wait for the wireless network so the drive failed to mount) perhaps consider adding the mount -a command to your crontab (see crontab and cron sleep)
 
 ** convert windows CR (carriage returns) to linux
 sed -i 's/\r//' filename
@@ -189,7 +177,7 @@ then save that into MY OWN m3u playlist for for the MPD daemon.
 no data - waiting update
 
 * bash
-** alias a file
+** alias
 for example if you get tired of typing emacs -nw to start emacs without a gui window then add
 
 #+BEGIN_SRC bash
@@ -199,9 +187,8 @@ alias enw='emacs -nw'
 to the end of your .profile or .bashrc file located at /home or /home/usr
 
 ** TODO wait for wifi
-damn thing doesnt wait for wifi so consider looking at;
+damn thing doesnt wait for wifi even though it is set to using raspi-config need to investigate
 
-http://raspberrypi.stackexchange.com/questions/13558/how-to-get-wi-fi-to-connect-on-boot
 
 * crontab
 
@@ -232,27 +219,20 @@ For some reason my pi would not wait for the wifi network to come online (wait f
 ** specifying the crontab editor
 export VISUAL=nano; crontab -e
 
-* wifi
+* network
+** fixed IP address
+add to /etc/dhcpcd.conf
+#+BEGIN_SRC bash
+#Custom static IP address
+interface eth0
+static ip_address=192.168.1.69/24
+static routers=192.168.1.1
+static domain_name_servers=192.168.1.1
+#+END_SRC
 
-add to /etc/network/interfaces the following
+changing eth0 to wlan0 depending on connection type
 
-auto lo
-iface lo inet loopback
-
-auto eth0
-allow-hotplug eth0
-iface eth0 inet manual
-
-auto wlan0
-allow-hotplug wlan0
-iface wlan0 inet manual
-    wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
-
-allow-hotplug wlan1
-iface wlan1 inet manual
-    wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
-
-* mail
+** mail
 
 Had problems with a cron job and no idea why, wihtout an MTA or mail transport assistant i could not see what errors were being given, after reading up i installed postfix
 
@@ -263,8 +243,29 @@ Choosing "LOCAL" during setup, then after a reboot i could use the following to 
 sudo tail -f /var/mail/<user>
 #+END_SRC
 
+** access a network drive
+Edit your /etc/fstab file and add the following line (changing the ip address and location of the credentials file to suit your setup);
+
+#+BEGIN_SRC bash
+//192.168.1.1/T_Drive /media/nas_documents cifs credentials=/home/drakx/.nas_credentials,sec=ntlmv2,uid=1000,gid=1000,iocharset=utf8 0 0
+#+END_SRC
+
+Now create a file called .nas_credentials in your home directory
+
+#+BEgIN_SRC
+username=YOUR_ROUTER_LOGIN
+password=YOUR_ROUTER_LOGIN_PASSWORD
+#+END_SRC
+
 * emacs
 Most of my pi's run headless and when editing i like to emacs so i need to type emacs -nw filename all the time. Creating an alias eases the typing
 #+BEGIN_SRC bash
 alias emacs="emacs -nw"
+#+END_SRC
+
+* camera
+** Disable red LED
+Edit /boot/config and add the line
+#+BEGIN_SRC
+disable_camera_led=1
 #+END_SRC
