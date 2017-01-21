@@ -1,8 +1,8 @@
 #+TITLE: Useful snippets for working with the Raspberry Pi
 #+AUTHOR: drakxtwo
 #+EMAIL: lhalls72@gmail.com
-#+DESCRIPTION: General information and snippets of code for working in python or bash with the RaspberryPi
-#+KEYWORDS:  python raspberrypi snippet
+#+DESCRIPTION: General information on setting up a RaspberryPi, snippets of code for working in python or bash. Mostly things i've learned for my own projects but a lot will be useful for most people starting their journey with the Pi.
+#+KEYWORDS: bash python raspberrypi
 #+AUTHOR: Lee Halls
 #+MAILTO: lhalls72@gmail.com
 #+KEYWORDS: raspberrypi notes snippets code bash python 
@@ -34,7 +34,11 @@ except:
 #+END_SRC
 
 ** credential file
-create a file called credentials.py eg
+If you dont want to store your login details in a python script, for example if you want to share that script you dont want to give people you password do you? So you can create a file credentials file eg
+
+emacs -nw credentials.py
+
+Then type in the following;
 
 #+BEGIN_SRC python
 # email login details
@@ -59,8 +63,8 @@ now call this file as a module in the main code and assign to your chosen variab
 #+BEGIN_SRC python
 import credentials
 
-empassword = leecredentials.em_login['password']
-inpassword = leecredentials.in_login['password']
+empassword = credentials.em_login['password']
+inpassword = credentials.in_login['password']
 
 print("email password:", empassword)
 print("initial password:", inpassword)
@@ -75,33 +79,37 @@ and finally a directory;
 Reboot and you should be good to go however if you still have problems (my pi would not wait for the wireless network so the drive failed to mount) perhaps consider adding the mount -a command to your crontab (see crontab and cron sleep)
 
 ** convert windows CR (carriage returns) to linux
-sed -i 's/\r//' filename
+
+# sed -i 's/\r//' filename
 
 Use with care it could destroy your file, it might be better to the dos2unix utility but the sed command worked for me
 
-* Display
+* PiDisplay
+Notes on using the offical pi touch screen
 ** rotate official display
-Useful if the display case you've bought is fixed orientation;
+Useful if the display case you've bought has a fixed orientation;
 
 edit your /boot/config.txt file, and add the following line:
 
 lcd_rotate=2
 
 ** get backlight status
-Weirdly it's 0 for on and 1 for off and script must be run as root
-
+Weirdly (/for me/) it's *0* for on and *1* for off and script must be run as root
+#+BEGIN_SRC python
 #!/usr/bin/env python3
-# gets backlight state
-
-import time
+# ----------------------------
+# gets current backlight state
+# ----------------------------
 
 file=open('/sys/devices/platform/rpi_backlight/backlight/rpi_backlight/bl_power','r+')
 current_status=int(file.read(1))
 
 print(current_status)
+#+END_SRC
 
 ** kiosk mode
-modify the /etc/xdg/lxsession/LXDE/autostart file or if using the NOOBS installation /etc/xdg/lxsession/LXDE-pi/autostart 
+Kiosk mode runs your internet browser full screen useful for setting up a display system. Modify the */etc/xdg/lxsession/LXDE/autostart* file or if using the NOOBS installation */etc/xdg/lxsession/LXDE-pi/autostart*
+#+BEGIN_SRC shell
 @lxpanel --profile LXDE-pi
 @pcmanfm --desktop --profile LXDE-pi
 @xscreensaver -no-splash
@@ -111,12 +119,30 @@ modify the /etc/xdg/lxsession/LXDE/autostart file or if using the NOOBS installa
 @xset s off
 @xset -dpms
 
-@chromium --noerrdialogs --kiosk http://127.0.0.1
-
-If the following file exists then it overrides any other files so the @chromium commnd must go in here
-nano .config/lxsession/LXDE-pi/autostart
-
 @chromium-browser --noerrdialogs --kiosk http://127.0.0.1:5000 --incognito --disable-translate
+#+END_SRC
+
+BE AWARE if the following file exists then it overrides any other files so the @chromium command must go in here.
+
+# nano .config/lxsession/LXDE-pi/autostart
+
+so edit it to show the line;
+
+#+BEGIN_SRC shell
+@chromium-browser --noerrdialogs --kiosk http://127.0.0.1:5000 --incognito --disable-translate
+#+END_SRC
+
+so my file reads;
+
+#+BEGIN_SRC shell
+
+@lxpanel --profile LXDE-pi
+@pcmanfm --desktop --profile LXDE-pi
+@xscreensaver -no-splash
+@point-rpi
+@chromium-browser --noerrdialogs --kiosk http://127.0.0.1:5000 --incognito --disable-translate
+
+#+END_SRC
 
 * Audio
 ** Enabling Audio Output
@@ -125,53 +151,68 @@ By default, the RPi audio output is set to automatically select the digital HDMI
 You can force the RPi to use a specific interface using the command amixer cset numid=3 N where the N parameter means the following: 0=auto, 1=analog, 2=hdmi.  Therefore, to force the Raspberry Pi to use the analog output:
 
 amixer cset numid=3 1
-** How to play Internet radio on your Raspberry PI?
+** How to play Internet radio on your Raspberry PI (mpd/mpc)
 
 first make sure your audio is working, using the ALSA package
-Raspberry PI - getting audio working
+
 install the mpd and mpc packages:
-sudo apt-get install mpd mpc
+# sudo apt-get install mpd mpc
+
 change the permissions of mpd (just to make sure):
-sudo service mpd stop
-sudo chmod -R g+w /var/lib/mpd
-sudo chmod -R g+w /var/run/mpd
+
+# sudo service mpd stop
+# sudo chmod -R g+w /var/lib/mpd
+# sudo chmod -R g+w /var/run/mpd
+
 make a change to the mpd config file /etc/mpd.conf
+
 sudo nano /etc/mpd.conf
-Comment OUT the line:
+
+Note all the sites i visited suggested that it was simply commenting OUT the line:
+
 bind_to_address "localhost"
-So, change it to:
+
+however i had many issues and nothing seemed to work until i had the conf file set as follows;
+
+#+BEGIN_SRC shell
 # bind_to_address "localhost"
-reboot your Raspberry PI:
-sudo shutdown now -r
-after it's up and running again add an Internet radio URL, for instance:
-mpc add http://icecast.omroep.nl/3fm-bb-mp3
-to start playing the stream type:
-mpc play
-
-** mpd and mpc
-
-argh what a nightmare that turned out to be, countless configs and websites reviewd on how "easy" it was to get the ###*### working. Ha! Eventually i found the following https://wiki.archlinux.org/index.php/Music_Player_Daemon/Troubleshooting perhaps it took me longer than it should because i was researching specific errors however eventually the following worked for me;
-
-comment out the the line in your [/etc/mpd.conf] which shows;
-
-#+BEGIN_SRC bash
-bind_to_address "localhost"
-#+END_SRC
-
-and add (or change it to read) 
-
-#+BEGIN_SRC
 bind_to_address "127.0.0.1"
 port "6600"
 #+END_SRC
 
-now at *last* i can play with ncmpc the music bring on '18 & Life.mp3' or 'The Vengeful One' which i was rapidly approaching....
+reboot your Raspberry PI:
+sudo shutdown now -r
+after it's up and running again add an Internet radio URL, for instance:
+mpc add http://icecast.omroep.nl/3fm-bb-mp3
 
-AND in order to play the online radio stream i needed not thier m3u playlist but to examine this file and extract the following
+to start playing the stream type:
+
+mpc play
+
+The other thing to be aware of is you may need to download the radio stations m3u playlist file and open it to extract the direct URL of the stream (/i had to/) so the stream i needed was;
 
     http://stream4.nadaje.com:11986/prs
 
-then save that into MY OWN m3u playlist for for the MPD daemon. 
+then save that into MY OWN m3u playlist for for the MPD daemon to work.
+
+
+*** python check if mpc is playing
+
+#+NAME:check if mpc is running with python
+#+BEGIN_SRC python
+from mpd import MPDClient
+
+client=MPDClient()
+client.idletimeout = None          # timeout for fetching the result of the idle command is handled seperately, default: None
+client.connect("localhost", 6600)  # connect to localhost:6600
+print(client.mpd_version)
+
+if client.status()['state'] in ('play', 'pause'):
+    print('Playing')
+else:
+    print('stopped')
+
+#+END_SRC
 
 * github
 no data - waiting update
@@ -185,9 +226,6 @@ alias enw='emacs -nw'
 #+END_SRC
 
 to the end of your .profile or .bashrc file located at /home or /home/usr
-
-** TODO wait for wifi
-damn thing doesnt wait for wifi even though it is set to using raspi-config need to investigate
 
 * misc
 ** Display system's serial support
@@ -266,9 +304,8 @@ Starting a command on reboot after x seconds
 
 For some reason my pi would not wait for the wifi network to come online (wait for network on boot is enabled) so my NAS wont connect, to be honest i had other things to do than fault find so as i added an @reboot mount command with a sleep period to ensure the drive was accessible;
 
-#+BEGIN_SRC
-@reboot sleep 10;sudo mount -a
-#+END_SRC
+# @reboot sleep 10;sudo mount -a
+
 
 ** specifying the crontab editor
 if like me you've accidentally set the wrong editor when first using crontab you can specify the editor everytime using the following;
@@ -284,39 +321,79 @@ SELECTED_EDITOR="/usr/bin/nano"
 #+END_SRC
 
 * network
-** fixed IP address
+** Static or fixed IP address
 add to /etc/dhcpcd.conf
 #+BEGIN_SRC bash
 #Custom static IP address
 interface eth0
-static ip_address=192.168.1.69/24
+static ip_address=192.168.1.04/24
 static routers=192.168.1.1
 static domain_name_servers=192.168.1.1
 #+END_SRC
 
-changing eth0 to wlan0 depending on connection type
+changing eth0 to wlan0 depending on connection type and also remember to use your own choice of IP address/subnet etc
 
 ** mail
 
-Had problems with a cron job and no idea why, wihtout an MTA or mail transport assistant i could not see what errors were being given, after reading up i installed postfix
+Had problems with a cron job and no idea why & at the time had not setup logging and without an MTA [Mail Transport Assistant] i could not see what errors were being given, after reading up i installed postfix
 
 sudo apt install postfix
 
 Choosing "LOCAL" during setup, then after a reboot i could use the following to find out what went wrong:
-#+BEGIN_SRC
+
+#+BEGIN_SRC shell
 sudo tail -f /var/mail/<user>
 #+END_SRC
+
+alternatively you can set up a more capable system and allow your Pi to send mail using your google account 
+
+#+BEGIN_SRC shell
+sudo apt-get install ssmtp mailutils mpack
+sudo nano /etc/ssmtp/ssmtp.conf
+#+END_SRC
+
+#+BEGIN_SRC shell
+#
+# Config file for sSMTP sendmail
+#
+# The person who gets all mail for userids < 1000
+# Make this empty to disable rewriting.
+# not sure if this is correct but admin@drakxtwo is working if not showing up in the headers
+# root=localhost
+root=your_chosen_address
+
+# The place where the mail goes. The actual machine name is required no
+# MX records are consulted. Commonly mailhosts are named mail.domain.com
+mailhub=smtp.gmail.com:587
+
+# Where will the mail seem to come from?
+# rewriteDomain=gmail.com
+
+# The full hostname
+hostname=yourHOSTNAME
+
+# Are users allowed to set their own From: address?
+# YES - Allow the user to specify their own From: address
+# NO - Use the system generated From: address
+FromLineOverride=YES
+
+UseSTARTTLS=YES
+
+AuthUser=yourEMAIL
+AuthPass=either password or two-factor key
+#+END_SRC
+
 
 ** access a network drive
 Edit your /etc/fstab file and add the following line (changing the ip address and location of the credentials file to suit your setup);
 
-#+BEGIN_SRC bash
+#+BEGIN_SRC shell
 //192.168.1.1/T_Drive /media/nas_documents cifs credentials=/home/drakx/.nas_credentials,sec=ntlmv2,uid=1000,gid=1000,iocharset=utf8 0 0
 #+END_SRC
 
 Now create a file called .nas_credentials in your home directory
 
-#+BEgIN_SRC
+#+BEGIN_SRC shell
 username=YOUR_ROUTER_LOGIN
 password=YOUR_ROUTER_LOGIN_PASSWORD
 #+END_SRC
