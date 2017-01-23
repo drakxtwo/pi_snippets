@@ -391,6 +391,41 @@ AuthUser=yourEMAIL
 AuthPass=either password or two-factor key
 #+END_SRC
 
+*** Example python script for using sSMTP
+#+BEGIN_SRC python
+#!/usr/bin/python
+# Taken and modified from an example here:
+# http://tombuntu.com/index.php/2008/10/24/server-monitoring-with-python-and-ssmtp/
+
+import subprocess, re, time
+import urllib, urllib2
+
+# email address to use in the to field
+recipient = 'towhomit@mayconcern'
+# email address to use in the from field
+sender = 'fromwhom@sentit'
+# template for the email message
+# first '%s' is recipient, second is sender, third is content
+message = '''To: %s
+From: %s
+Subject: rpiELEC IP: %s
+
+'''
+
+def send_mail(content):
+    try:
+        ssmtp=subprocess.Popen(('/usr/sbin/ssmtp', recipient), stdin=subprocess.PIPE)
+    except OSError:
+        print('Error sending mail')
+        
+    # pass mail to sSMTP client
+    ssmtp.communicate(message % (recipient, sender,content))
+    ssmtp.wait()
+
+
+data = re.search('"([0-9.]*)"', urllib.urlopen("http://ip.jsontest.com/").read()).group(1)
+send_mail(data)
+#+END_SRC
 
 ** access a network drive
 Edit your /etc/fstab file and add the following line (changing the ip address and location of the credentials file to suit your setup);
