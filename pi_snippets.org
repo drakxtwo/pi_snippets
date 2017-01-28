@@ -126,7 +126,7 @@ Kiosk mode runs your internet browser full screen useful for setting up a displa
 
 BE AWARE if the following file exists then it overrides any other files so the @chromium command must go in here.
 
-# nano .config/lxsession/LXDE-pi/autostart
+~nano .config/lxsession/LXDE-pi/autostart~
 
 so edit it to show the line;
 
@@ -302,7 +302,7 @@ sudo nano /etc/rsyslog.conf
 
 and uncomment the line
 
- - cron.*                          /var/log/cron.log
+~cron.*                          /var/log/cron.log~
 
 to run a command on boot i use the following in the crontab file
 
@@ -313,7 +313,7 @@ Starting a command on reboot after x seconds
 
 For some reason my pi would not wait for the wifi network to come online (wait for network on boot is enabled) so my NAS wont connect, to be honest i had other things to do than fault find so as i added an @reboot mount command with a sleep period to ensure the drive was accessible;
 
- - @reboot sleep 10;sudo mount -a
+~@reboot sleep 10;sudo mount -a~
 
 
 ** specifying the crontab editor
