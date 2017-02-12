@@ -225,6 +225,37 @@ else:
 
 * github
 no data - waiting update
+in the terminal type;
+
+make a directory ~.ssh~
+
+
+~ssh-keygen -t rsa -b 4096 -C "your@email.com"~
+
+give the file a name or leave it for default
+
+then start the ssh agent if its not already started.
+
+#+BEGIN_SRC bash
+pi@dragElec:~ $ eval "$(ssh-agent -s)"
+Agent pid 1066
+#+END_SRC
+
+then ~ssh-add ~/.ssh/id_rsa~
+
+
+#+BEGIN_SRC bash
+pi@dragElec:~ $ ssh-add ~/.ssh/id_rsa
+Identity added: /home/pi/.ssh/id_rsa (rsa w/o comment)
+#+END_SRC
+
+now we have to add the newly generated ssh key to our github account
+
+locate the ~id_rsa.pub~ file located in hour ~.ssh~ folder and copy the entire line be careful with this step its critical not to add any extra whitespace.
+
+Then in your github home click on the profile picture and choose settings and from the left hand menu choose SSH & GPG keys.
+
+
 
 * bash
 ** alias
@@ -427,6 +458,40 @@ data = re.search('"([0-9.]*)"', urllib.urlopen("http://ip.jsontest.com/").read()
 send_mail(data)
 #+END_SRC
 
+to send an image or attachment use mpack eg;
+
+mpack -s subject picture.png mail.address@example.com
+
+
+*** my ssmtp conf file
+
+#+BEGIN_SRC bash
+
+# Config file for sSMTP sendmail
+#
+# The person who gets all mail for userids < 1000
+# Make this empty to disable rewriting.
+root=postmaster
+
+# The place where the mail goes. The actual machine name is required no
+# MX records are consulted. Commonly mailhosts are named mail.domain.com
+mailhub=mail.drakxtwo.eu
+
+# Where will the mail seem to come from?
+#rewriteDomain=
+
+# The full hostname
+hostname=dragElec
+
+# Are users allowed to set their own From: address?
+# YES - Allow the user to specify their own From: address
+# NO - Use the system generated From: address
+FromLineOverride=YES
+UseSTARTTLS=YES
+AuthUser=drakxpi@drakxtwo.eu
+AuthPass=password
+
+#+END_SRC
 ** access a network drive
 Edit your /etc/fstab file and add the following line (changing the ip address and location of the credentials file to suit your setup);
 
@@ -440,6 +505,15 @@ Now create a file called .nas_credentials in your home directory
 username=YOUR_ROUTER_LOGIN
 password=YOUR_ROUTER_LOGIN_PASSWORD
 #+END_SRC
+
+Alternatively if like me your pi refuses to wait for network on boot and your nas is then not mounted you can add a line to the crontab file;
+
+#+BEGIN_SRC bash
+@reboot sleep 10;sudo mount -t cifs -o user=drakx //192.168.1.1/DataFiles /media/nas_documents/
+#+END_SRC
+
+This seems to work repeatably, so i stopped investigating the no wait for network issue.
+
 
 * emacs
 Most of my pi's run headless and when editing i like to emacs so i need to type emacs -nw filename all the time. Creating an alias eases the typing
