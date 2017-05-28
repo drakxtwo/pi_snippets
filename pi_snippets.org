@@ -124,7 +124,7 @@ Kiosk mode runs your internet browser full screen useful for setting up a displa
 @chromium-browser --noerrdialogs --kiosk http://127.0.0.1:5000 --incognito --disable-translate
 #+END_SRC
 
-BE AWARE if the following file exists then it overrides any other files so the @chromium command must go in here.
+*BE AWARE* if the following file exists then it overrides any other files so the @chromium command must go in here.
 
 ~nano .config/lxsession/LXDE-pi/autostart~
 
