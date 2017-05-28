@@ -225,6 +225,37 @@ else:
 
 * github
 no data - waiting update
+in the terminal type;
+
+make a directory ~.ssh~
+
+
+~ssh-keygen -t rsa -b 4096 -C "your@email.com"~
+
+give the file a name or leave it for default
+
+then start the ssh agent if its not already started.
+
+#+BEGIN_SRC bash
+pi@dragElec:~ $ eval "$(ssh-agent -s)"
+Agent pid 1066
+#+END_SRC
+
+then ~ssh-add ~/.ssh/id_rsa~
+
+
+#+BEGIN_SRC bash
+pi@dragElec:~ $ ssh-add ~/.ssh/id_rsa
+Identity added: /home/pi/.ssh/id_rsa (rsa w/o comment)
+#+END_SRC
+
+now we have to add the newly generated ssh key to our github account
+
+locate the ~id_rsa.pub~ file located in hour ~.ssh~ folder and copy the entire line be careful with this step its critical not to add any extra whitespace.
+
+Then in your github home click on the profile picture and choose settings and from the left hand menu choose SSH & GPG keys.
+
+
 
 * bash
 ** alias
@@ -235,6 +266,64 @@ alias enw='emacs -nw'
 #+END_SRC
 
 to the end of your .profile or .bashrc file located at /home or /home/usr
+
+
+** my bash profile;
+#+BEGIN_SRC bash
+
+# ~/.profile: executed by the command interpreter for login shells.
+# This file is not read by bash(1), if ~/.bash_profile or ~/.bash_login
+# exists.
+# see /usr/share/doc/bash/examples/startup-files for examples.
+# the files are located in the bash-doc package.
+
+# the default umask is set in /etc/profile; for setting the umask
+# for ssh logins, install and configure the libpam-umask package.
+#umask 022
+
+# if running bash
+if [ -n "$BASH_VERSION" ]; then
+    # include .bashrc if it exists
+    if [ -f "$HOME/.bashrc" ]; then
+        . "$HOME/.bashrc"
+    fi
+fi
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/bin" ] ; then
+    PATH="$HOME/bin:$PATH"
+fi
+
+let upSeconds="$(/usr/bin/cut -d. -f1 /proc/uptime)"
+let secs=$((${upSeconds}%60))
+let mins=$((${upSeconds}/60%60))
+let hours=$((${upSeconds}/3600%24))
+let days=$((${upSeconds}/86400))
+UPTIME=`printf "%d days, %02dh%02dm%02ds" "$days" "$hours" "$mins" "$secs"`
+
+# get the load averages
+read one five fifteen rest < /proc/loadavg
+
+echo "$(tput setaf 2)
+   .~~.   .~~.    `date +"%A, %e %B %Y, %r"`
+  '. \ ' ' / .'   `uname -srmo`$(tput setaf 1)
+   .~ .~~~..~.
+  : .~.'~'.~. :   Uptime.............: ${UPTIME}
+ ~ (   ) (   ) ~  Memory.............: `cat /proc/meminfo | grep MemFree | awk {'print $2'}`kB (Free) / `cat /proc/meminfo | grep MemTotal | awk {'print $2'}`kB (Total)
+( : '~'.~.'~' : ) Load Averages......: ${one}, ${five}, ${fifteen} (1, 5, 15 min)
+ ~ .~ (   ) ~. ~  Running Processes..: `ps ax | wc -l | tr -d " "`
+  (  : '~' :  )   IP Addresses.......: `/sbin/ifconfig eth0 | /bin/grep "inet addr" | /usr/bin/cut -d ":" -f 2 | /usr/bin/cut -d " " -f 1` and `wget -q -O - http://icanhazip.com/ | tail`
+   '~ .~~~. ~'
+       '~'
+$(tput sgr0)"
+
+
+alias tma="tmux attach"
+alias emc="emacs -nw"
+
+#+END_SRC
+
+Note the MOTD code is not mine, was taken from here; https://www.raspberrypi.org/forums/viewtopic.php?t=23440
 
 * misc
 ** Display system's serial support
@@ -427,6 +516,40 @@ data = re.search('"([0-9.]*)"', urllib.urlopen("http://ip.jsontest.com/").read()
 send_mail(data)
 #+END_SRC
 
+to send an image or attachment use mpack eg;
+
+mpack -s subject picture.png mail.address@example.com
+
+
+*** my ssmtp conf file
+
+#+BEGIN_SRC bash
+
+# Config file for sSMTP sendmail
+#
+# The person who gets all mail for userids < 1000
+# Make this empty to disable rewriting.
+root=postmaster
+
+# The place where the mail goes. The actual machine name is required no
+# MX records are consulted. Commonly mailhosts are named mail.domain.com
+mailhub=mail.drakxtwo.eu
+
+# Where will the mail seem to come from?
+#rewriteDomain=
+
+# The full hostname
+hostname=dragElec
+
+# Are users allowed to set their own From: address?
+# YES - Allow the user to specify their own From: address
+# NO - Use the system generated From: address
+FromLineOverride=YES
+UseSTARTTLS=YES
+AuthUser=drakxpi@drakxtwo.eu
+AuthPass=password
+
+#+END_SRC
 ** access a network drive
 Edit your /etc/fstab file and add the following line (changing the ip address and location of the credentials file to suit your setup);
 
@@ -440,6 +563,15 @@ Now create a file called .nas_credentials in your home directory
 username=YOUR_ROUTER_LOGIN
 password=YOUR_ROUTER_LOGIN_PASSWORD
 #+END_SRC
+
+Alternatively if like me your pi refuses to wait for network on boot and your nas is then not mounted you can add a line to the crontab file;
+
+#+BEGIN_SRC bash
+@reboot sleep 10;sudo mount -t cifs -o user=drakx //192.168.1.1/DataFiles /media/nas_documents/
+#+END_SRC
+
+This seems to work repeatably, so i stopped investigating the no wait for network issue.
+
 
 * emacs
 Most of my pi's run headless and when editing i like to emacs so i need to type emacs -nw filename all the time. Creating an alias eases the typing
