@@ -7,8 +7,37 @@
 #+MAILTO: lhalls72@gmail.com
 #+KEYWORDS: raspberrypi notes snippets code bash python 
 #+LANGUAGE:  en
+#+DATE: 2017-02-14
 
-Various pieces of info for python and pi setup
+* Table of contents                                                     :TOC:
+- [[#file][File]]
+  - [[#read-csv-and-create-an-array-variable][read csv and create an array variable]]
+  - [[#credential-file][credential file]]
+  - [[#convert-windows-cr-carriage-returns-to-linux][convert windows CR (carriage returns) to linux]]
+- [[#pidisplay][PiDisplay]]
+  - [[#rotate-official-display][rotate official display]]
+  - [[#get-backlight-status][get backlight status]]
+  - [[#kiosk-mode][kiosk mode]]
+- [[#audio][Audio]]
+  - [[#enabling-audio-output][Enabling Audio Output]]
+  - [[#how-to-play-internet-radio-on-your-raspberry-pi-mpdmpc][How to play Internet radio on your Raspberry PI (mpd/mpc)]]
+- [[#github][github]]
+- [[#bash][bash]]
+  - [[#alias][alias]]
+- [[#misc][misc]]
+  - [[#display-systems-serial-support][Display system's serial support]]
+  - [[#nginx-gpg-key][nginx gpg key]]
+- [[#crontab][crontab]]
+  - [[#cron-sleep][cron sleep]]
+  - [[#specifying-the-crontab-editor][specifying the crontab editor]]
+- [[#network][network]]
+  - [[#static-or-fixed-ip-address][Static or fixed IP address]]
+  - [[#mail][mail]]
+  - [[#access-a-network-drive][access a network drive]]
+  - [[#ssh][ssh]]
+- [[#emacs][emacs]]
+- [[#camera][camera]]
+  - [[#disable-red-led][Disable red LED]]
 
 * File
 ** read csv and create an array variable
@@ -37,7 +66,7 @@ except:
 ** credential file
 If you dont want to store your login details in a python script, for example if you want to share that script you dont want to give people you password do you? So you can create a file credentials file eg
 
-emacs -nw credentials.py
+~emacs -nw credentials.py~
 
 Then type in the following;
 
@@ -75,7 +104,7 @@ print("initial password:", inpassword)
 
 and finally a directory;
 
-/media/nas_documents
+~/media/nas_documents~
 
 Reboot and you should be good to go however if you still have problems (my pi would not wait for the wireless network so the drive failed to mount) perhaps consider adding the mount -a command to your crontab (see crontab and cron sleep)
 
@@ -91,18 +120,15 @@ Notes on using the offical pi touch screen
 ** rotate official display
 Useful if the display case you've bought has a fixed orientation;
 
-edit your /boot/config.txt file, and add the following line:
+edit your ~/boot/config.txt~ file, and add the following line:
 
-*lcd_rotate=2*
+~lcd_rotate=2~
 
 ** get backlight status
-Weirdly (/for me/) it's *0* for on and *1* for off and script must be run as root
+Weirdly (/at least for me 1 has always been on/) it's *0* for on and *1* for off and script must be run as root
 #+BEGIN_SRC python
 #!/usr/bin/env python3
-# ----------------------------
 # gets current backlight state
-# ----------------------------
-
 file=open('/sys/devices/platform/rpi_backlight/backlight/rpi_backlight/bl_power','r+')
 current_status=int(file.read(1))
 
@@ -158,7 +184,7 @@ You can force the RPi to use a specific interface using the command amixer cset 
 
 Therefore, to force the Raspberry Pi to use the analog output:
 
-*amixer cset numid=3 1*
+~amixer cset numid=3 1~
 
 ** How to play Internet radio on your Raspberry PI (mpd/mpc)
 
@@ -166,21 +192,21 @@ first make sure your audio is working, using the ALSA package
 
 install the mpd and mpc packages:
 
- - sudo apt-get install mpd mpc
+~sudo apt-get install mpd mpc~
 
 change the permissions of mpd (just to make sure):
 
- - sudo service mpd stop
- - sudo chmod -R g+w /var/lib/mpd
- - sudo chmod -R g+w /var/run/mpd
+~sudo service mpd stop~
+~sudo chmod -R g+w /var/lib/mpd~
+~sudo chmod -R g+w /var/run/mpd~
 
 make a change to the mpd config file /etc/mpd.conf
 
- - sudo nano /etc/mpd.conf
+~sudo nano /etc/mpd.conf~
 
 Note all the sites i visited suggested that it was simply commenting OUT the line:
 
- - bind_to_address "localhost"
+~bind_to_address "localhost"~
 
 however i had many issues and nothing seemed to work until i had the conf file set as follows;
 
@@ -204,7 +230,6 @@ The other thing to be aware of is you may need to download the radio stations m3
 
 then save that into MY OWN m3u playlist for for the MPD daemon to work.
 
-
 *** python check if mpc is playing
 
 #+NAME:check if mpc is running with python
@@ -225,37 +250,6 @@ else:
 
 * github
 no data - waiting update
-in the terminal type;
-
-make a directory ~.ssh~
-
-
-~ssh-keygen -t rsa -b 4096 -C "your@email.com"~
-
-give the file a name or leave it for default
-
-then start the ssh agent if its not already started.
-
-#+BEGIN_SRC bash
-pi@dragElec:~ $ eval "$(ssh-agent -s)"
-Agent pid 1066
-#+END_SRC
-
-then ~ssh-add ~/.ssh/id_rsa~
-
-
-#+BEGIN_SRC bash
-pi@dragElec:~ $ ssh-add ~/.ssh/id_rsa
-Identity added: /home/pi/.ssh/id_rsa (rsa w/o comment)
-#+END_SRC
-
-now we have to add the newly generated ssh key to our github account
-
-locate the ~id_rsa.pub~ file located in hour ~.ssh~ folder and copy the entire line be careful with this step its critical not to add any extra whitespace.
-
-Then in your github home click on the profile picture and choose settings and from the left hand menu choose SSH & GPG keys.
-
-
 
 * bash
 ** alias
@@ -266,64 +260,6 @@ alias enw='emacs -nw'
 #+END_SRC
 
 to the end of your .profile or .bashrc file located at /home or /home/usr
-
-
-** my bash profile;
-#+BEGIN_SRC bash
-
-# ~/.profile: executed by the command interpreter for login shells.
-# This file is not read by bash(1), if ~/.bash_profile or ~/.bash_login
-# exists.
-# see /usr/share/doc/bash/examples/startup-files for examples.
-# the files are located in the bash-doc package.
-
-# the default umask is set in /etc/profile; for setting the umask
-# for ssh logins, install and configure the libpam-umask package.
-#umask 022
-
-# if running bash
-if [ -n "$BASH_VERSION" ]; then
-    # include .bashrc if it exists
-    if [ -f "$HOME/.bashrc" ]; then
-        . "$HOME/.bashrc"
-    fi
-fi
-
-# set PATH so it includes user's private bin if it exists
-if [ -d "$HOME/bin" ] ; then
-    PATH="$HOME/bin:$PATH"
-fi
-
-let upSeconds="$(/usr/bin/cut -d. -f1 /proc/uptime)"
-let secs=$((${upSeconds}%60))
-let mins=$((${upSeconds}/60%60))
-let hours=$((${upSeconds}/3600%24))
-let days=$((${upSeconds}/86400))
-UPTIME=`printf "%d days, %02dh%02dm%02ds" "$days" "$hours" "$mins" "$secs"`
-
-# get the load averages
-read one five fifteen rest < /proc/loadavg
-
-echo "$(tput setaf 2)
-   .~~.   .~~.    `date +"%A, %e %B %Y, %r"`
-  '. \ ' ' / .'   `uname -srmo`$(tput setaf 1)
-   .~ .~~~..~.
-  : .~.'~'.~. :   Uptime.............: ${UPTIME}
- ~ (   ) (   ) ~  Memory.............: `cat /proc/meminfo | grep MemFree | awk {'print $2'}`kB (Free) / `cat /proc/meminfo | grep MemTotal | awk {'print $2'}`kB (Total)
-( : '~'.~.'~' : ) Load Averages......: ${one}, ${five}, ${fifteen} (1, 5, 15 min)
- ~ .~ (   ) ~. ~  Running Processes..: `ps ax | wc -l | tr -d " "`
-  (  : '~' :  )   IP Addresses.......: `/sbin/ifconfig eth0 | /bin/grep "inet addr" | /usr/bin/cut -d ":" -f 2 | /usr/bin/cut -d " " -f 1` and `wget -q -O - http://icanhazip.com/ | tail`
-   '~ .~~~. ~'
-       '~'
-$(tput sgr0)"
-
-
-alias tma="tmux attach"
-alias emc="emacs -nw"
-
-#+END_SRC
-
-Note the MOTD code is not mine, was taken from here; https://www.raspberrypi.org/forums/viewtopic.php?t=23440
 
 * misc
 ** Display system's serial support
@@ -387,7 +323,7 @@ The & at the end of the line makes the script run in the background whilst the p
 
 By default, the logging for the cron daemon is not enabled in Debian (I assume it is the system you are using). To enable it, please open the file /etc/rsyslog.conf via
 
-sudo nano /etc/rsyslog.conf
+~sudo nano /etc/rsyslog.conf~
 
 and uncomment the line
 
@@ -403,7 +339,6 @@ Starting a command on reboot after x seconds
 For some reason my pi would not wait for the wifi network to come online (wait for network on boot is enabled) so my NAS wont connect, to be honest i had other things to do than fault find so as i added an @reboot mount command with a sleep period to ensure the drive was accessible;
 
 ~@reboot sleep 10;sudo mount -a~
-
 
 ** specifying the crontab editor
 if like me you've accidentally set the wrong editor when first using crontab you can specify the editor everytime using the following;
@@ -451,9 +386,8 @@ sudo nano /etc/ssmtp/ssmtp.conf
 #+END_SRC
 
 #+BEGIN_SRC shell
-#
 # Config file for sSMTP sendmail
-#
+
 # The person who gets all mail for userids < 1000
 # Make this empty to disable rewriting.
 # root=localhost
@@ -516,40 +450,6 @@ data = re.search('"([0-9.]*)"', urllib.urlopen("http://ip.jsontest.com/").read()
 send_mail(data)
 #+END_SRC
 
-to send an image or attachment use mpack eg;
-
-mpack -s subject picture.png mail.address@example.com
-
-
-*** my ssmtp conf file
-
-#+BEGIN_SRC bash
-
-# Config file for sSMTP sendmail
-#
-# The person who gets all mail for userids < 1000
-# Make this empty to disable rewriting.
-root=postmaster
-
-# The place where the mail goes. The actual machine name is required no
-# MX records are consulted. Commonly mailhosts are named mail.domain.com
-mailhub=mail.drakxtwo.eu
-
-# Where will the mail seem to come from?
-#rewriteDomain=
-
-# The full hostname
-hostname=dragElec
-
-# Are users allowed to set their own From: address?
-# YES - Allow the user to specify their own From: address
-# NO - Use the system generated From: address
-FromLineOverride=YES
-UseSTARTTLS=YES
-AuthUser=drakxpi@drakxtwo.eu
-AuthPass=password
-
-#+END_SRC
 ** access a network drive
 Edit your /etc/fstab file and add the following line (changing the ip address and location of the credentials file to suit your setup);
 
@@ -564,17 +464,15 @@ username=YOUR_ROUTER_LOGIN
 password=YOUR_ROUTER_LOGIN_PASSWORD
 #+END_SRC
 
-Alternatively if like me your pi refuses to wait for network on boot and your nas is then not mounted you can add a line to the crontab file;
+** ssh
+One trick i didnt learn until well into my pi day was *sshfs* this especially on a linux based system is brilliant, essentially it mounts your remote system as a folder on your desktop/laptop so instead of saving files then transfering etc you can open and load the remote files and work on them as if local. Excellent for tweaking your python website.
 
-#+BEGIN_SRC bash
-@reboot sleep 10;sudo mount -t cifs -o user=drakx //192.168.1.1/DataFiles /media/nas_documents/
-#+END_SRC
+The line of code you need is really simple;
 
-This seems to work repeatably, so i stopped investigating the no wait for network issue.
-
+~sshfs pi@192.168.1.69:/home/pi home/leehalls/pi_elec/~
 
 * emacs
-Most of my pi's run headless and when editing i like to emacs so i need to type emacs -nw filename all the time. Creating an alias eases the typing
+Most of my pi's run headless and when editing i like to use emacs so i need to type emacs -nw filename all the time. Creating an alias eases the typing
 #+BEGIN_SRC bash
 alias emacs="emacs -nw"
 #+END_SRC
@@ -585,3 +483,4 @@ Edit /boot/config and add the line
 #+BEGIN_SRC bash
 disable_camera_led=1
 #+END_SRC
+
