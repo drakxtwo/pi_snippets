@@ -1,57 +1,24 @@
-#+TITLE: Useful snippets for working with the Raspberry Pi
-#+AUTHOR: drakxtwo
-#+EMAIL: lhalls72@gmail.com
-#+DESCRIPTION: General information on setting up a RaspberryPi, snippets of code for working in python or bash. Mostly things i've learned for my own projects but a lot will be useful for most people starting their journey with the Pi.
-#+KEYWORDS: bash python raspberrypi
-#+AUTHOR: Lee Halls
-#+MAILTO: lhalls72@gmail.com
-#+KEYWORDS: raspberrypi notes snippets code bash python 
-#+LANGUAGE:  en
-#+DATE: 2017-02-14
-#+TAGS: ["python", "code", "raspberrypi"]
+#+hugo_base_dir: d:/documents/test.net/
+#+hugo_section: docs
+#+hugo_auto_set_lastmod: t
 
+#+seq_todo: TODO DRAFT DONE
 
-Various things i've found useful for my projects using raspberry pi's, covers things from turning the red light off on the camera to kiosk mode for Chrome.
+#+title: This is basically a dumping ground for various things i've found useful (emacs, mpd, raspberry & so on)
+#+author: lee halls
+#+date: 2017-02-14
+#+startup: showeverything
+#+options: toc:1
 
-Everything here can be downloaded in the original org-mode format: [[http:/orgfiles/pi_snippets.txt][Snippets of code]] because of the way hugo interprets org files i've had to save it with a /txt/ extension for the link to work. If you want to view the file in emacs/org then simply change the extension to /org/ instead of /txt/ or copy and paste.
+This for now covers all sorts in a relatively uncurated manner such things as turning the red light off on the pi camera, kiosk mode for Chrome and emacs tips. Plus in updating this for the new site i've learnt more about how ox-hugo functions [fn:0]
 
-
-
-* Table of contents                                                     :TOC:
-- [[#working-with-files][Working with files]]
-  - [[#read-csv-and-create-an-array-variable][read csv and create an array variable]]
-  - [[#credential-file][credential file]]
-  - [[#convert-windows-cr-carriage-returns-to-linux][convert windows CR (carriage returns) to linux]]
-- [[#pidisplay][PiDisplay]]
-  - [[#rotate-official-display][rotate official display]]
-  - [[#get-backlight-status][get backlight status]]
-  - [[#kiosk-mode][kiosk mode]]
-- [[#audio][Audio]]
-  - [[#enabling-audio-output][Enabling Audio Output]]
-  - [[#how-to-play-internet-radio-on-your-raspberry-pi-mpdmpc][How to play Internet radio on your Raspberry PI (mpd/mpc)]]
-- [[#github][github]]
-- [[#bash][bash]]
-  - [[#alias][alias]]
-- [[#misc][misc]]
-  - [[#display-systems-serial-support][Display system's serial support]]
-  - [[#nginx-gpg-key][nginx gpg key]]
-- [[#crontab][crontab]]
-  - [[#run-in-background-during-boot][run in background during boot]]
-  - [[#enable-cron-logging][enable cron logging]]
-  - [[#run-on-reboot][run on reboot]]
-  - [[#cron-sleep][cron sleep]]
-  - [[#specifying-the-crontab-editor][specifying the crontab editor]]
-- [[#network][network]]
-  - [[#static-or-fixed-ip-address][Static or fixed IP address]]
-  - [[#mail][mail]]
-  - [[#access-a-network-drive][access a network drive]]
-  - [[#ssh][ssh]]
-- [[#emacs][emacs]]
-- [[#camera][camera]]
-  - [[#disable-red-led][Disable red LED]]
+Everything here can be downloaded in the [[file:content-org/snippets.org][original org-mode]] format.
 
 * Working with files
-** read csv and create an array variable
+** read csv and create an array variable                          :@python:
+
+So the following tries to open a csv file and store in the array ~SensorValues~ the contents of each row, if it fails to open the file it simply stores an arbitrary value
+
 #+BEGIN_SRC python
 # read in stored values & initialise preset values
 import csv
@@ -74,7 +41,7 @@ except:
         66.00)
 #+END_SRC
 
-** credential file
+** credential file                                                :@python:
 If you dont want to store your login details in a python script, for example if you want to share that script you dont want to give people you password do you? So you can create a file credentials file eg
 
 ~emacs -nw credentials.py~
@@ -111,13 +78,12 @@ print("email password:", empassword)
 print("initial password:", inpassword)
 #+END_SRC
 
-
-** convert windows CR (carriage returns) to linux
+** convert windows CR (carriage returns) to linux                   :linux:
 ~sed -i 's/\r//' filename~
 
-Use with care it could destroy your file, it might be better to the dos2unix utility 
+Use with care it could destroy your file, it might be better to the dos2unix utility
 
-* PiDisplay
+* PiDisplay                                                     :raspberry:
 Notes on using the offical pi touch screen
 ** rotate official display
 Useful if the display case you've bought has a fixed orientation;
@@ -125,7 +91,16 @@ Useful if the display case you've bought has a fixed orientation;
 edit your ~/boot/config.txt~ file, and add the following line:
 
 ~lcd_rotate=2~
+** onscreen keyboard
+You can install an onscreen keyboard by;
 
+~sudo apt-get install florence~
+
+or 
+
+~sudo apt-get install matchbox-keyboard~
+
+then reboot, to access the keyboard click on menu/accessories/keyboard
 ** get backlight status
 Weirdly (/at least i think so/) it's *0* for on and *1* for off and script must be run as root
 #+BEGIN_SRC python
@@ -171,7 +146,7 @@ so my file reads;
 #+END_SRC
 
 * Audio
-** Enabling Audio Output
+** Enabling Audio Output                                        :raspberry:
 By default, the RPi audio output is set to automatically select the digital HDMI interface if its being used, otherwise the analog audio output. You can force it to use a specific interface via the sound mixer controls.  amixer allows command-line control of the mixer for the ALSA driver.
 
 You can force the RPi to use a specific interface using the command amixer cset numid=3 N where the N parameter means the following:
@@ -184,7 +159,7 @@ Therefore, to force the Raspberry Pi to use the analog output:
 
 ~amixer cset numid=3 1~
 
-** How to play Internet radio on your Raspberry PI (mpd/mpc)
+** How to play Internet radio on your Raspberry PI (mpd/mpc)    :raspberry:
 
 first make sure your audio is working, using the ALSA package
 
@@ -228,7 +203,7 @@ The other thing to be aware of is you may need to download the radio stations m3
 
 then save that into MY OWN m3u playlist for for the MPD daemon to work.
 
-*** python check if mpc is playing
+** python check if mpc is playing                       :@python:raspberry:
 
 #+NAME:check if mpc is running with python
 #+BEGIN_SRC python
@@ -246,11 +221,8 @@ else:
 
 #+END_SRC
 
-* github
-no data - waiting update
-
 * bash
-** alias
+** alias                                                            :linux:
 for example if you get tired of typing emacs -nw to start emacs without a gui window then add
 
 ~alias enw='emacs -nw'~
@@ -258,7 +230,7 @@ for example if you get tired of typing emacs -nw to start emacs without a gui wi
 to the end of your .profile or .bashrc file located at /home or /home/usr
 
 * misc
-** Display system's serial support
+** Display system's serial support                        :linux:raspberry:
 
 ~dmesg | grep tty~
 
@@ -276,7 +248,7 @@ pi@raspberrypi:~/xbee $ dmesg | grep tty
 pi@raspberrypi:~/xbee $
 #+END_SRC
 
-** nginx gpg key
+** nginx gpg key                                                :raspberry:
 The distributed version of nginx is old, if you want to install the newer versions you have to self compile but first you need to take a couple of steps;
 
 create a file;
@@ -300,17 +272,17 @@ and you should get no error messages meaning you can now run;
 
 ~apt-get source nginx~
 
-to finally get the latest nginx source for building on your pi (/set aside quite some time for it to build/) and to install use 
+to finally get the latest nginx source for building on your pi (/set aside quite some time for it to build/) and to install use
 
 ~sudo dpkg -i nginx_1.9.4-1~squeeze_armhf.deb~
 
-** MOTD
+** MOTD                                                   :linux:raspberry:
 
 Below MOTD was found somewhere on the net, when i find from where i'll add a link (its only here in this file so i remember)
 
 To get something like this every time you log in;
 
-[[file+sys:imgs_pisnippets/2017-11-11%2010_34_24-192.168.0.69%20(pi).png]]
+[[file+sys:imgs_pisnippets/2017-11-11 10_34_24-192.168.0.69 (pi).png]]
 
 You need a custom message of the day script, copy the code and place it in ~/home/pi/.bash_profile~
 
@@ -328,18 +300,18 @@ read one five fifteen rest < /proc/loadavg
 echo "$(tput setaf 2)
    .~~.   .~~.    `date +"%A, %e %B %Y, %r"`
   '. \ ' ' / .'   `uname -srmo`$(tput setaf 1)
-   .~ .~~~..~.    
+   .~ .~~~..~.
   : .~.'~'.~. :   Uptime.............: ${UPTIME}
  ~ (   ) (   ) ~  Memory.............: `cat /proc/meminfo | grep MemFree | awk {'print $2'}`kB (Free) / `cat /proc/meminfo | grep MemTotal | awk {'print $2'}`kB (Total)
 ( : '~'.~.'~' : ) Load Averages......: ${one}, ${five}, ${fifteen} (1, 5, 15 min)
  ~ .~ (   ) ~. ~  Running Processes..: `ps ax | wc -l | tr -d " "`
   (  : '~' :  )   IP Addresses.......: `/sbin/ifconfig eth0 | /bin/grep "inet addr" | /usr/bin/cut -d ":" -f 2 | /usr/bin/cut -d " " -f 1` and `wget -q -O - http://icanhazip.com/ | tail`
-   '~ .~~~. ~'    
+   '~ .~~~. ~'
        '~'
 $(tput sgr0)"
 #+END_SRC
 $(tput sgr0)"
-** identify usb devices
+** identify usb devices                                         :raspberry:
 
 create a script with the following and make it executable
 #+BEGIN_SRC bash
@@ -358,12 +330,50 @@ done
 
 taken from: https://unix.stackexchange.com/questions/144029/command-to-determine-ports-of-a-device-like-dev-ttyusb0
 
+** mysql
+using mariadb as the main sql server
 
+logon to sql server: ~mysql -u root -p~
+
+create database: ~CREATE DATABASE home;~
+
+now we need at least one table.
+
+
+~CREATE TABLE temps (recnum int NOT NULL AUTO_INCREMENT, recdate DATE DEFAULT NULL, rectime time DEFAULT NULL, external float DEFAULT NULL, frontroom float DEFAULT NULL, bedroom float DEFAULT NULL, kitchen float DEFAULT NULL,PRIMARY KEY( recnum ));~
+
+now we can see what we've created with;
+
+~show columns in temps~
+
+#+BEGIN_SRC verse
++-----------+---------+------+-----+---------+----------------+
+| Field     | Type    | Null | Key | Default | Extra          |
++-----------+---------+------+-----+---------+----------------+
+| recnum    | int(11) | NO   | PRI | NULL    | auto_increment |
+| recdate   | date    | YES  |     | NULL    |                |
+| rectime   | time    | YES  |     | NULL    |                |
+| external  | float   | YES  |     | NULL    |                |
+| frontroom | float   | YES  |     | NULL    |                |
+| bedroom   | float   | YES  |     | NULL    |                |
+| kitchen   | float   | YES  |     | NULL    |                |
++-----------+---------+------+-----+---------+----------------+
+7 rows in set (0.04 sec)
+#+END_SRC
+
+now to leave the sql server simply type ~exit;~
+
+** access serial port                                           :raspberry:
+when you want python to access the serial port it will if not run as root error out with permission denied. To get round this add your user to the dialout group eg
+
+~sudo adduser <username> dialout~
+
+then logout and log back in, you should now be able to run your python script with using root. To check what groups your user is a member of simply type ~groups~
 * crontab
-** run in background during boot
+** run in background during boot                          :linux:raspberry:
 The & at the end of the line makes the script run in the background whilst the pi carries on booting
 @reboot sudo python /home/pi/homeApp/ourhome.py &
-** enable cron logging
+** enable cron logging                                    :linux:raspberry:
 By default, the logging for the cron daemon is not enabled in Debian To enable it, open the file /etc/rsyslog.conf via
 
 ~sudo nano /etc/rsyslog.conf~
@@ -371,41 +381,49 @@ By default, the logging for the cron daemon is not enabled in Debian To enable i
 and uncomment the line
 
 ~cron.*                          /var/log/cron.log~
-** run on reboot
+** run on reboot                                          :linux:raspberry:
 to run a command on boot i use the following in the crontab file
 
-@reboot run_command
+~@reboot your_run_command~
 
-** cron sleep
-Starting a command on reboot after x seconds 
+** cron sleep                                             :linux:raspberry:
+Starting a command on reboot after x seconds
 
 For some reason my pi would not wait for the wifi network to come online (wait for network on boot is enabled) so my NAS wont connect, to be honest i had other things to do than fault find so as i added an @reboot mount command with a sleep period to ensure the drive was accessible;
 
 ~@reboot sleep 10;sudo mount -a~
 
-** specifying the crontab editor
-if like me you've accidentally set the wrong editor when first using crontab you can specify the editor everytime using the following;
-#+BEGIN_SRC bash
-export VISUAL=nano; crontab -e
-#+END_SRC
-
-alternatively you can edit the ~/.selected.editor file and change to your chosen editor;
-
-#+BEGIN_SRC bash
-# Generated by /usr/bin/select-editor
-SELECTED_EDITOR="/usr/bin/nano"
-#+END_SRC
-
 * network
+** setup new blank image
+before removing the flashed sd card
+
+create a blank file called ssh
+
+then create a file called wpa_supplicant.conf with the following;
+
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+country=gb
+
+network={
+    ssid="your_SSID"
+    psk="your_password"
+    key_mgmt=WPA-PSK
+}
 ** setup wifi via command line
 
 ~sudo iwlist wlan0 scan~
 
 Open the wpa-supplicant configuration file in nano:
 ~sudo nano /etc/wpa_supplicant/wpa_supplicant.conf~
-Go to the bottom of the file and add the following: 
+Go to the bottom of the file and add the following:
 #+BEGIN_SRC bash
+country=gb
+update_config=1
+ctrl_interface=/var/run/wpa_supplicant
+
 network={
+    scan_ssid=1
     ssid="testing"
     psk="testingPassword"
 }
@@ -427,7 +445,7 @@ changing eth0 to wlan0 depending on connection type and also remember to use you
 
 ** mail
 
-Had problems with a cron job and no idea why & at the time had not setup logging and without an MTA [Mail Transport Assistant] i could not see what errors were being given, after reading up i installed postfix
+Had problems with a cron job and no idea why & at the time had not setup [[*enable cron logging][logging]] and without an MTA [Mail Transport Assistant] i could not see what errors were being given, after reading up i installed postfix
 
 ~sudo apt install postfix~
 
@@ -437,7 +455,7 @@ Choosing "LOCAL" during setup, then after a reboot i could use the following to 
 sudo tail -f /var/mail/<user>
 #+END_SRC
 
-alternatively you can set up a more capable system and allow your Pi to send mail using your google account 
+alternatively you can set up a more capable system and allow your Pi to send mail using your google account
 
 #+BEGIN_SRC shell
 sudo apt-get install ssmtp mailutils mpack
@@ -473,7 +491,22 @@ AuthUser=yourEMAIL
 AuthPass=either password or two-factor key
 #+END_SRC
 
-*** Example python script for using sSMTP
+***** TODO - update rqd Example python script for using sSMTP
+
+sudo apt-get install ssmtp
+sudo apt-get install mailutils
+
+root=postmaster
+mailhub=smtp.gmail.com:587
+hostname=raspberrypi
+AuthUser=AGmailUserName@gmail.com
+AuthPass=TheGmailPassword
+FromLineOverride=YES
+UseSTARTTLS=YES
+
+***** old
+
+
 #+BEGIN_SRC python
 #!/usr/bin/python
 # Taken and modified from an example here:
@@ -499,7 +532,7 @@ def send_mail(content):
         ssmtp=subprocess.Popen(('/usr/sbin/ssmtp', recipient), stdin=subprocess.PIPE)
     except OSError:
         print('Error sending mail')
-        
+
     # pass mail to sSMTP client
     ssmtp.communicate(message % (recipient, sender,content))
     ssmtp.wait()
@@ -523,26 +556,96 @@ username=YOUR_ROUTER_LOGIN
 password=YOUR_ROUTER_LOGIN_PASSWORD
 #+END_SRC
 
-** ssh
-One trick i didnt learn until far too late was *sshfs* essentially it mounts your remote system as a folder on your desktop/laptop so instead of saving files then transfering etc you can open and load the remote files and work on them as if local. Excellent for tweaking your python website.
+** sshfs - access the file system                                :raspberry:
+One trick i didnt learn until far too late was *sshfs* essentially it mounts your remote system as a folder on your dekstop so instead of saving files then transfering etc you can open and load the remote files and work on them as if local. Excellent for tweaking your python website.
 
-The line of code you need is really simple;
+Assuming you have sshfs installed then the line of code you need is really simple;
 
 ~sshfs pi@192.168.1.69:/home/pi home/user/folder/~
 
-* emacs
-Most of my pi's run headless and when editing i like to use emacs so i need to type emacs -nw filename all the time. Creating an alias eases the typing
+** python ping                                                     :@python:
+Little code that could be used as heartbeat for a remote headless device
 
-~alias emacs="emacs -nw"~
+First ~sudo pip install ping~
 
-replace character with new line
+#+BEGIN_SRC python
+import ping, socket
+try:
+    ping.verbose_ping('www.google.com', count=3)
+except socket.error, e:
+    print "Ping Error:", e
+#+END_SRC
+* emacs                                                    :@emacs:orgmode:
+** emacs commands/tips
+*** comment out sections of code
 
-M-x replace-string RET ; RET C-q C-j.
-C-q for quoted-insert,
-C-j is a newline.
-* camera
+when a region is highlighted pressing ~M-;~ will comment out the section so much easier than moving line by line
+
+*** a timer - this one i really like
+Pressing ~C-c C-x -~ starts a list in emacs with timer, now pressing M-RET will allow notes 
+
+ #+begin_example
+ - 0:00:00 :: Now I can start taking some notes.        
+ - 0:00:02 :: If I hit ~M-RET~, a new list item is created.
+ - 0:00:06 :: And so on 
+ #+end_example
+
+As emacs is always open and i often do cycle time analysis i find this a nice easy way of timing and making notes instead of sitting with the phone in hand hoping no one calls.
+
+*** org-toggle-link-display
+OK not a shortcut but really useful for me once toggled it displays links in their unshortened form which means if a link has a ~%20~ in it then the emacs search & replace ~M-shift-%~ will work (/for some reason files i've transferred from machine to machine all had link spaces replaced with ~%20~ so this function became very useful
+
+*** occurrence of text
+Quite useful pressing ~M-x~ and then typing ~occur~  brings up a search function 
+
+[[file:/img/mx_occur.png]]
+
+which then searches your file with regexp & opens a second buffer with all matches
+
+*** emacs org-publish
+/kept here just for future reference/ took me a long time to get this working for a lot of reasons, once configured don't use ~ctrl c-e P~ to get to publish going you using the below example use ~alt-x org-publish ret org ret~
+
+#+BEGIN_SRC elisp
+(setq org-publish-project-alist
+      '(
+        ("org-notes"
+         :base-directory "C:/Users/drakx/Documents/org_files"
+         :base-extension "org"
+         :publishing-directory "C:/Users/drakx/Documents/org_publish"
+         :recursive -t
+         :publishing-function org-html-publish-to-html
+         :headline-levels 4
+         :auto-preamble t
+         :auto-sitemap t                ; Generate sitemap.org automagically...
+         :sitemap-filename "sitemap.org"  ; ... call it sitemap.org (it's the default)...
+         :sitemap-title "Sitemap"         ; ... with title 'Sitemap'.
+         :language "en"
+         :section-numbers nil
+         :with-toc t
+         :html-preamble t
+         )
+
+        ("org-static"
+         :base-directory "C:/Users/drakx/Documents/org_files/files/"
+         :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
+         :publishing-directory "C:/Users/drakx/Documents/org_publish/files/"
+         :recursive t
+         :publishing-function org-publish-attachment
+         )
+
+      ("org" :components ("org-notes" "org-static"))
+      )
+)
+#+END_SRC
+
+* camera                                                        :raspberry:
 ** Disable red LED
 Edit /boot/config and add the line
 
 ~disable_camera_led=1~
+
+
+
+* Footnotes
+[fn:0] a single page is the /preferred/ ox-hugo way and now i understand why. Every header in the above file has tags which makes pulling all relevant info together easy as shown by the posts section but in a single file these tags and categories per heading are *irrelevant/ignored* when published via ox-hugo. It is the document level tags defined in the header of the file by ~#+HUGO_TAGS: linux raspberry orgmode~ that are used. So that when you click on for example ~orgmode~ in your site tag list it will not pull up the individual entries from this page with the tag orgmode but this whole document will be shown eg [[file:/img/oxhugo_onefile.jpg]] so i've removed the document level tags as i feel its not "/nice/" and you can still download the orgfile itself anyway.
 
